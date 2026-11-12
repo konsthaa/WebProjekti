@@ -78,4 +78,4 @@ function App() {
 
 export default App
 
-//Konstan versio
+//Konstan versio..
