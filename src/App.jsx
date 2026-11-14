@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {supabase} from './lib/supabaseClient';
+import SignInMenu from './components/SignInMenu';
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -7,21 +7,34 @@ function App() {
   const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
-    async function fetchProducts() {
-      const {data, error} = await supabase
-        .from('PRODUCTS')
-        .select('*')
-        .order('product_id', {ascending: true});
+    let cancelled = false;
 
-      if (error) {
-        setErrorMsg(error.message);
-      } else {
-        setProducts(data);
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products');
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || `Request failed (${response.status})`);
+        }
+
+        if (!cancelled) setProducts(result);
+      } catch (error) {
+        if (!cancelled) {
+          setErrorMsg(
+            error instanceof Error ? error.message : 'Failed to load products',
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      setLoading(false);
     }
 
     fetchProducts();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const groupedProducts = products.reduce((groups, product) => {
@@ -31,14 +44,25 @@ function App() {
     return groups;
   }, {});
 
-  if (loading) return <p style={{padding: '2rem'}}>Loading menu...</p>;
-  if (errorMsg)
-    return <p style={{padding: '2rem', color: 'red'}}>Error: {errorMsg}</p>;
-
   return (
     <div style={{padding: '2rem', fontFamily: 'sans-serif', maxWidth: '650px'}}>
-      <h1>Menu</h1>
-      {products.length === 0 ? (
+      <header
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1rem',
+          marginBottom: '1rem',
+        }}
+      >
+        <h1 style={{margin: 0}}>Menu</h1>
+        <SignInMenu />
+      </header>
+      {loading ? (
+        <p>Loading menu...</p>
+      ) : errorMsg ? (
+        <p style={{color: 'red'}}>Error: {errorMsg}</p>
+      ) : products.length === 0 ? (
         <p>No products found.</p>
       ) : (
         Object.entries(groupedProducts).map(([category, categoryProducts]) => (
@@ -52,7 +76,7 @@ function App() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '1rem',
-                    border: '1px solid #ddd',
+                    border: '1px solid #900',
                     borderRadius: '8px',
                     padding: '1.25rem',
                     marginBottom: '1rem',
@@ -74,7 +98,7 @@ function App() {
                       </strong>
                     </div>
 
-                    <p style={{margin: '0.5rem 0', color: '#444'}}>
+                    <p style={{margin: '0.5rem 0', color: '#CC5500'}}>
                       {product.description}
                     </p>
 
