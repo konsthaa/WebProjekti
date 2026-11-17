@@ -106,7 +106,7 @@ function SignInMenu() {
     zIndex: 1,
     width: 'min(300px, calc(100vw - 4rem))',
     padding: '1rem',
-    border: '1px solid #ddd',
+    border: '1px solid #000',
     borderRadius: '8px',
     background: 'white',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
