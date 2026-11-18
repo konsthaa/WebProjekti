@@ -12,6 +12,7 @@ function SignInMenu() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [orders, setOrders] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -99,6 +100,39 @@ function SignInMenu() {
     if (signOutError) setError(signOutError.message);
   }
 
+  async function loadOrders() {
+    const {
+      data: {session},
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      setError('You must sign in first.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/orders', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Could not load orders');
+      }
+
+      setOrders(data);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Could not load orders',
+      );
+    }
+  }
+
   const menuStyle = {
     position: 'absolute',
     top: 'calc(100% + 0.5rem)',
@@ -136,6 +170,27 @@ function SignInMenu() {
         <button type="button" onClick={handleSignOut}>
           Sign out
         </button>
+        <button type="button" onClick={loadOrders}>
+          Load my orders
+        </button>
+        {orders !== null && (
+          <section style={{textAlign: 'left'}}>
+            <h3>My orders</h3>
+            {orders.length === 0 ? (
+              <p>No orders yet.</p>
+            ) : (
+              <ul>
+                {orders.map((order) => (
+                  <li key={order.order_id}>
+                    <strong>Order #{order.order_id}</strong> — {order.date}
+                    <p>{order.order_detail || 'No details'}</p>
+                    <p>Status: {order.order_status ?? 'Not set'}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
         {error && <p role="alert">{error}</p>}
       </div>
     );
