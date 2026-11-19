@@ -13,6 +13,9 @@ function SignInMenu() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [orders, setOrders] = useState(null);
+  const [showOrders, setShowOrders] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -27,8 +30,9 @@ function SignInMenu() {
 
     const {
       data: {subscription},
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
+      if (event === 'PASSWORD_RECOVERY') setIsPasswordRecovery(true);
     });
 
     return () => {
@@ -95,12 +99,66 @@ function SignInMenu() {
     }
   }
 
+  async function handlePasswordRecovery() {
+    setError('');
+    setMessage('');
+
+    if (!email.trim()) {
+      setError('Enter your email first.');
+      return;
+    }
+
+    const {error: resetError} = await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      {redirectTo: window.location.origin},
+    );
+
+    if (resetError) setError(resetError.message);
+    else setMessage('Check your email for the password reset link.');
+  }
+
+  async function handlePasswordUpdate(event) {
+    event.preventDefault();
+    setError('');
+    setMessage('');
+
+    const {error: updateError} = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      setError(updateError.message);
+    } else {
+      setIsPasswordRecovery(false);
+      setNewPassword('');
+      setMessage('Password updated successfully.');
+    }
+  }
+
   async function handleSignOut() {
+    setError('');
     const {error: signOutError} = await supabase.auth.signOut();
-    if (signOutError) setError(signOutError.message);
+    if (signOutError) {
+      setError(signOutError.message);
+    } else {
+      setOrders(null);
+      setShowOrders(false);
+    }
   }
 
   async function loadOrders() {
+    if (showOrders) {
+      setShowOrders(false);
+      return;
+    }
+
+    if (orders !== null) {
+      setShowOrders(true);
+      return;
+    }
+
+    setError('');
+
     const {
       data: {session},
     } = await supabase.auth.getSession();
@@ -124,6 +182,7 @@ function SignInMenu() {
       }
 
       setOrders(data);
+      setShowOrders(true);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -140,7 +199,7 @@ function SignInMenu() {
     zIndex: 1,
     width: 'min(300px, calc(100vw - 4rem))',
     padding: '1rem',
-    border: '1px solid #000',
+    border: '1px solid #FF8C00',
     borderRadius: '8px',
     background: 'white',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
@@ -156,11 +215,47 @@ function SignInMenu() {
     return <span>Loading account…</span>;
   }
 
+  if (isPasswordRecovery) {
+    return (
+      <form onSubmit={handlePasswordUpdate}>
+        <label style={fieldStyle}>
+          New password
+          <input
+            type="password"
+            minLength={6}
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+            required
+          />
+        </label>
+        <button type="submit">Update password</button>
+        {message && <p role="status">{message}</p>}
+        {error && <p role="alert">{error}</p>}
+      </form>
+    );
+  }
+
   if (session?.user) {
     return (
-      <div style={{position: 'relative', textAlign: 'right'}}>
+      <div
+        style={{
+          position: 'relative',
+          textAlign: 'right',
+          border: '1px solid rgb(153, 0, 0)',
+          borderRadius: '10px',
+          padding: '1.25rem',
+          marginBottom: '1.25rem',
+          borderColor: '#3D3B2A',
+        }}
+      >
         <strong>{session.user.email}</strong>
-        <div style={{fontSize: '0.9rem', color: '#555', margin: '0.25rem 0'}}>
+        <div
+          style={{
+            fontSize: '0.9rem',
+            color: '#3D3B2A' /*#555' <-original*/,
+            margin: '0.25rem 0',
+          }}
+        >
           {role === 'admin'
             ? 'Admin'
             : role === 'customer'
@@ -171,9 +266,10 @@ function SignInMenu() {
           Sign out
         </button>
         <button type="button" onClick={loadOrders}>
-          Load my orders
+          {showOrders ? 'Hide my orders' : 'Load my orders'}
         </button>
-        {orders !== null && (
+
+        {showOrders && orders !== null && (
           <section style={{textAlign: 'left'}}>
             <h3>My orders</h3>
             {orders.length === 0 ? (
@@ -252,6 +348,12 @@ function SignInMenu() {
           <button type="submit">
             {mode === 'register' ? 'Register' : 'Sign in'}
           </button>
+
+          {mode === 'sign-in' && (
+  <button type="button" onClick={handlePasswordRecovery}>
+    Forgot password?
+  </button>
+)}
         </form>
 
         <button
