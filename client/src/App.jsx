@@ -1,10 +1,87 @@
 import {useEffect, useState} from 'react';
 import SignInMenu from './components/SignInMenu';
+import {supabase} from './lib/supabaseClient';
 
 function App() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [orderMessage, setOrderMessage] = useState('');
+  const [orderError, setOrderError] = useState('');
+  const [placingOrder, setPlacingOrder] = useState(false);
+
+  function addToCart(product) {
+    setOrderError('');
+    setOrderMessage('');
+
+    setCart((currentCart) => {
+      const existing = currentCart.find(
+        (item) => item.product.product_id === product.product_id,
+      );
+
+      if (existing) {
+        return currentCart.map((item) =>
+          item.product.product_id === product.product_id
+            ? {...item, quantity: item.quantity + 1}
+            : item,
+        );
+      }
+
+      return [...currentCart, {product, quantity: 1}];
+    });
+  }
+
+  async function placeOrder() {
+    setOrderError('');
+    setOrderMessage('');
+
+    if (cart.length === 0) {
+      setOrderError('Add a menu item first.');
+      return;
+    }
+
+    setPlacingOrder(true);
+
+    try {
+      const {
+        data: {session},
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) throw sessionError;
+      if (!session) throw new Error('Sign in before placing an order.');
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: cart.map(({product, quantity}) => ({
+            product_id: product.product_id,
+            quantity,
+          })),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Could not place order.');
+      }
+
+      setCart([]);
+      setOrderMessage(`Order #${result.order_id} placed.`);
+    } catch (error) {
+      setOrderError(
+        error instanceof Error ? error.message : 'Could not place order.',
+      );
+    } finally {
+      setPlacingOrder(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -15,7 +92,9 @@ function App() {
         const result = await response.json();
 
         if (!response.ok) {
-          throw new Error(result.error || `Request failed (${response.status})`);
+          throw new Error(
+            result.error || `Request failed (${response.status})`,
+          );
         }
 
         if (!cancelled) setProducts(result);
@@ -115,6 +194,9 @@ function App() {
                         {product.glut ? 'Yes' : 'No'} | Lactose-free:{' '}
                         {product.lacto ? 'Yes' : 'No'}
                       </p>
+                      <button type="button" onClick={() => addToCart(product)}>
+                        Add to cart
+                      </button>
                     </div>
                   </div>
 
@@ -137,6 +219,29 @@ function App() {
           </section>
         ))
       )}
+      <section>
+        <h2>Cart</h2>
+
+        {cart.length === 0 ? (
+          <p>Your cart is empty.</p>
+        ) : (
+          <>
+            <ul>
+              {cart.map(({product, quantity}) => (
+                <li key={product.product_id}>
+                  {product.name} × {quantity}
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={placeOrder} disabled={placingOrder}>
+              {placingOrder ? 'Placing order…' : 'Place order'}
+            </button>
+          </>
+        )}
+
+        {orderMessage && <p role="status">{orderMessage}</p>}
+        {orderError && <p role="alert">{orderError}</p>}
+      </section>
     </div>
   );
 }

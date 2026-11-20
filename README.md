@@ -46,3 +46,8 @@ npm run build
 
 
 ### File locations: server = Backend, client = Frontend
+
+
+### 20.11.26 How to make order?
+
+Order; click on product's 'add to cart' --> go down to the bottom --> place order --> example: "order #5 placed". Open devtools --> Network --> fetch/XHR --> orders to see json.
