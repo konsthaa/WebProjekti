@@ -1,5 +1,5 @@
-const express = require('express');
-const authenticate = require('../middleware/authenticate');
+import express from 'express';
+import authenticate from '../middleware/authenticate.js';
 
 const router = express.Router();
 
@@ -146,4 +146,4 @@ router.post('/', authenticate, async (req, res) => {
   return res.status(201).json(order);
 });
 
-module.exports = router;
+export default router;

@@ -1,6 +1,9 @@
-const path = require('node:path');
-const {createClient} = require('@supabase/supabase-js');
-const dotenv = require('dotenv');
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createClient} from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({path: path.resolve(__dirname, '../.env')});
 
@@ -28,4 +31,4 @@ function createUserClient(accessToken) {
   });
 }
 
-module.exports = {supabase, createUserClient};
+export {supabase, createUserClient};

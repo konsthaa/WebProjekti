@@ -1,7 +1,10 @@
-const path = require('node:path');
-const express = require('express');
-const ordersRouter = require('./routes/orders');
-const productsRouter = require('./routes/products');
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import express from 'express';
+import ordersRouter from './routes/orders.js';
+import productsRouter from './routes/products.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
