@@ -1,0 +1,11 @@
+{
+  "name": "lunch-menu-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:app": "npm --prefix src install",
+    "start": "npm --prefix src start",
+    "dev": "npm --prefix src run dev"
+  }
+}

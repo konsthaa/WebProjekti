@@ -6,9 +6,11 @@
   "scripts": {
     "start": "node server/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently -k -n api,web \"npm:dev:server\" \"npm:dev:client\"",
+    "postinstall": "npm --prefix lunch-menu-api/src install",
+    "dev": "concurrently -k -n main-api,lunch-api,web \"npm:dev:server\" \"npm:dev:lunch-menu-api\" \"npm:dev:client\"",
     "dev:client": "vite",
     "dev:server": "node --watch server/index.js",
+    "dev:lunch-menu-api": "npm --prefix lunch-menu-api run dev",
     "build": "vite build",
     "preview": "vite preview"
   },

@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      '/api/lunch-menu': 'http://localhost:3001',
       '/api': 'http://localhost:3000',
     },
   },
