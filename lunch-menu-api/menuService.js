@@ -1,7 +1,7 @@
 import { supabase } from '../config/supabase.js';
 
 const TABLE_NAME = 'LUNCH MENU';
-const COLUMNS = 'product_id, name, price, category, date';
+const COLUMNS = 'product_id, name, price, category, date, Veg, Glut, Lacto';
 
 export async function getMenuItems({ date, category } = {}) {
   let query = supabase
@@ -30,6 +30,9 @@ export async function createMenuItem(item) {
     price: Number(item.price),
     category: item.category.trim(),
     date: item.date,
+    Veg: item.Veg ?? false,
+    Glut: item.Glut ?? false,
+    Lacto: item.Lacto ?? false,
   };
 
   const { data, error } = await supabase
@@ -49,6 +52,9 @@ export async function updateMenuItem(productId, updates) {
   if (updates.price !== undefined) payload.price = Number(updates.price);
   if (updates.category !== undefined) payload.category = updates.category.trim();
   if (updates.date !== undefined) payload.date = updates.date;
+  if (updates.Veg !== undefined) payload.Veg = updates.Veg;
+  if (updates.Glut !== undefined) payload.Glut = updates.Glut;
+  if (updates.Lacto !== undefined) payload.Lacto = updates.Lacto;
 
   const { data, error } = await supabase
     .from(TABLE_NAME)

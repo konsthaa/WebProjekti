@@ -1,8 +1,10 @@
 import {useEffect, useState} from 'react';
+import {Link, Route, Routes} from 'react-router-dom';
 import SignInMenu from './components/SignInMenu';
+import LunchMenu from './components/LunchMenu';
 import {supabase} from './lib/supabaseClient';
 
-function App() {
+function HomePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -124,19 +126,7 @@ function App() {
   }, {});
 
   return (
-    <div style={{padding: '2rem', fontFamily: 'sans-serif', maxWidth: '650px'}}>
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '1rem',
-          marginBottom: '1rem',
-        }}
-      >
-        <h1 style={{margin: 0}}>Menu</h1>
-        <SignInMenu />
-      </header>
+    <>
       {loading ? (
         <p>Loading menu...</p>
       ) : errorMsg ? (
@@ -242,6 +232,50 @@ function App() {
         {orderMessage && <p role="status">{orderMessage}</p>}
         {orderError && <p role="alert">{orderError}</p>}
       </section>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <div style={{padding: '2rem', fontFamily: 'sans-serif', maxWidth: '650px'}}>
+      <header
+        style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '1rem',
+        marginBottom: '1rem',
+        }}
+      >
+        <h1 style={{margin: 0}}>
+        <Link
+          to="/"
+          style={{color: 'inherit', textDecoration: 'none'}}
+          aria-label="Go to home page"
+        >
+          Menu
+        </Link>
+        </h1>
+        <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '1rem',
+        }}
+        >
+        <nav aria-label="Page navigation">
+          <Link to="/lunch-menu/">Lunch menu</Link>
+        </nav>
+        <SignInMenu />
+        </div>
+      </header>
+
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/lunch-menu" element={<LunchMenu />} />
+        <Route path="/lunch-menu/" element={<LunchMenu />} />
+      </Routes>
     </div>
   );
 }
