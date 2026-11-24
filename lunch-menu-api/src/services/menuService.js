@@ -23,7 +23,7 @@ export async function getMenuItems({ date, category } = {}) {
   return data;
 }
 
-export async function createMenuItem(item) {
+export async function createMenuItem(item, client = supabase) {
   const payload = {
     product_id: item.product_id,
     name: item.name.trim(),
@@ -35,7 +35,7 @@ export async function createMenuItem(item) {
     Lacto: item.Lacto ?? false,
   };
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from(TABLE_NAME)
     .insert(payload)
     .select(COLUMNS)
@@ -45,7 +45,7 @@ export async function createMenuItem(item) {
   return data;
 }
 
-export async function updateMenuItem(productId, updates) {
+export async function updateMenuItem(productId, updates, client = supabase) {
   const payload = {};
 
   if (updates.name !== undefined) payload.name = updates.name.trim();
@@ -56,9 +56,21 @@ export async function updateMenuItem(productId, updates) {
   if (updates.Glut !== undefined) payload.Glut = updates.Glut;
   if (updates.Lacto !== undefined) payload.Lacto = updates.Lacto;
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from(TABLE_NAME)
     .update(payload)
+    .eq('product_id', productId)
+    .select(COLUMNS)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteMenuItem(productId, client = supabase) {
+  const {data, error} = await client
+    .from(TABLE_NAME)
+    .delete()
     .eq('product_id', productId)
     .select(COLUMNS)
     .maybeSingle();

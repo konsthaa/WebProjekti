@@ -1,4 +1,9 @@
-import { getMenuItems, createMenuItem, updateMenuItem } from '../services/menuService.js';
+import {
+  createMenuItem,
+  deleteMenuItem,
+  getMenuItems,
+  updateMenuItem,
+} from '../services/menuService.js';
 
 export async function handleGetMenu(req, res, next) {
   try {
@@ -15,7 +20,7 @@ export async function handleGetMenu(req, res, next) {
 
 export async function handlePostMenuItem(req, res, next) {
   try {
-    const created = await createMenuItem(req.body);
+    const created = await createMenuItem(req.body, req.supabase);
     res.status(201).json({
       message: 'Lunch menu item added.',
       data: created,
@@ -28,7 +33,7 @@ export async function handlePostMenuItem(req, res, next) {
 export async function handlePutMenuItem(req, res, next) {
   try {
     const { productId } = req.params;
-    const updated = await updateMenuItem(productId, req.body);
+    const updated = await updateMenuItem(productId, req.body, req.supabase);
 
     if (!updated) {
       return res.status(404).json({
@@ -39,6 +44,25 @@ export async function handlePutMenuItem(req, res, next) {
     return res.status(200).json({
       message: 'Lunch menu item updated.',
       data: updated,
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+export async function handleDeleteMenuItem(req, res, next) {
+  try {
+    const deleted = await deleteMenuItem(req.params.productId, req.supabase);
+
+    if (!deleted) {
+      return res.status(404).json({
+        error: `Lunch menu item with product_id "${req.params.productId}" was not found.`,
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Lunch menu item deleted.',
+      data: deleted,
     });
   } catch (err) {
     return next(err);

@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 
-function LunchMenu() {
+function LunchMenu({addToCart}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -103,6 +103,9 @@ function LunchMenu() {
                     </div>
                   </div>
                   <strong>{Number(item.price).toFixed(2)} €</strong>
+                  <button type="button" onClick={() => addToCart(item)}>
+                    Lisää ostoskoriin
+                  </button>
                 </li>
               ))}
             </ul>

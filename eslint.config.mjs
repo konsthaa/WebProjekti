@@ -4,5 +4,5 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   { files: ["**/*.{js,mjs,cjs}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.browser } },
-  { files: ["server/**/*.js"], languageOptions: { globals: globals.node } },
+  { files: ["server/**/*.js", "lunch-menu-api/**/*.js"], languageOptions: { globals: globals.node } },
 ]);
