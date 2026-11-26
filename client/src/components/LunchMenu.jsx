@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom';
 import {fetchData} from '../utils/fetchData';
 import AdminLunchMenu from './AdminLunchMenu';
 
-function LunchMenu({addToCart}) {
+function LunchMenu() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -108,9 +108,6 @@ function LunchMenu({addToCart}) {
                     </div>
                   </div>
                   <strong>{Number(item.price).toFixed(2)} €</strong>
-                  <button type="button" onClick={() => addToCart(item)}>
-                    Lisää ostoskoriin
-                  </button>
                 </li>
               ))}
             </ul>
