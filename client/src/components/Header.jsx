@@ -1,10 +1,11 @@
 import {Link} from 'react-router-dom';
 import SignInMenu from './SignInMenu';
 
-function Header() {
+function Header({cartCount = 0}) {
   const headerLinkClass =
     'underline-offset-4 hover:underline focus-visible:underline';
-  return (
+
+    return (
     <header className="w-full bg-white border-b border-stone-200 shadow-xs mb-8">
       <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
         <Link
@@ -22,8 +23,8 @@ function Header() {
           <Link className={headerLinkClass} to="/lunch-menu">
             Lounasmenu
           </Link>
-          <Link className={headerLinkClass} to="/#cart">
-            Ostoskori
+          <Link className={headerLinkClass} to="/cart">
+            {cartCount > 0 ? `Ostoskori (${cartCount})` : 'Ostoskori'}
           </Link>
         </nav>
 
