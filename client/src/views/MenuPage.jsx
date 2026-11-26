@@ -1,61 +1,10 @@
 import {useEffect, useState} from 'react';
-import {supabase} from '../lib/supabaseClient';
 import {fetchData} from '../utils/fetchData';
 
-function MenuPage({cart, setCart, addToCart}) {
+function MenuPage({addToCart}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [orderMessage, setOrderMessage] = useState('');
-  const [orderError, setOrderError] = useState('');
-  const [placingOrder, setPlacingOrder] = useState(false);
-
-
-
-  async function placeOrder() {
-    setOrderError('');
-    setOrderMessage('');
-
-    if (cart.length === 0) {
-      setOrderError('Add a menu item first.');
-      return;
-    }
-
-    setPlacingOrder(true);
-
-    try {
-      const {
-        data: {session},
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError) throw sessionError;
-      if (!session) throw new Error('Sign in before placing an order.');
-
-      const result = await fetchData('/api/v1/orders', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: cart.map(({product, quantity}) => ({
-            product_id: product.product_id,
-            quantity,
-          })),
-        }),
-      });
-
-      setCart([]);
-      setOrderMessage(`Order #${result.order_id} placed.`);
-    } catch (error) {
-      setOrderError(
-        error instanceof Error ? error.message : 'Could not place order.',
-      );
-    } finally {
-      setPlacingOrder(false);
-    }
-  }
 
   useEffect(() => {
     let cancelled = false;
@@ -182,30 +131,6 @@ function MenuPage({cart, setCart, addToCart}) {
             ),
           )
         )}
-      </section>
-
-      <section id="cart">
-        <h2>Cart</h2>
-
-        {cart.length === 0 ? (
-          <p>Your cart is empty.</p>
-        ) : (
-          <>
-            <ul>
-              {cart.map(({product, quantity}) => (
-                <li key={product.product_id}>
-                  {product.name} × {quantity}
-                </li>
-              ))}
-            </ul>
-            <button type="button" onClick={placeOrder} disabled={placingOrder}>
-              {placingOrder ? 'Placing order…' : 'Place order'}
-            </button>
-          </>
-        )}
-
-        {orderMessage && <p role="status">{orderMessage}</p>}
-        {orderError && <p role="alert">{orderError}</p>}
       </section>
     </main>
   );
