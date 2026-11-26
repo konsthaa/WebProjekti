@@ -1,11 +1,13 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {fetchData} from '../utils/fetchData';
+import AdminLunchMenu from './AdminLunchMenu';
 
 function LunchMenu({addToCart}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -14,7 +16,10 @@ function LunchMenu({addToCart}) {
       try {
         const result = await fetchData('/api/v1/lunch-menu');
 
-        if (!cancelled) setItems(result.data ?? []);
+        if (!cancelled) {
+          setItems(result.data ?? []);
+          setErrorMsg(null);
+        }
       } catch (error) {
         if (!cancelled) {
           setErrorMsg(
@@ -31,7 +36,7 @@ function LunchMenu({addToCart}) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [refreshKey]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -59,6 +64,10 @@ function LunchMenu({addToCart}) {
         <Link to="/">Back to home</Link>
       </p>
       <h2>Lunch menu</h2>
+      <AdminLunchMenu
+        items={items}
+        onChanged={() => setRefreshKey((current) => current + 1)}
+      />
 
       {loading ? (
         <p>Loading lunch menu...</p>

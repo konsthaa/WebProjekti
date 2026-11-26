@@ -16,7 +16,6 @@ const diets = ['Veg', 'Glut', 'Lacto'];
 const updatable = ['name', 'price', 'category', 'date', ...diets];
 
 const validateCreate = [
-  body('product_id').notEmpty(),
   body('name').isString().trim().notEmpty(),
   body('price').isFloat({min: 0}),
   body('category').isString().trim().notEmpty(),
