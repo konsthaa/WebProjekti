@@ -12,7 +12,9 @@ const httpError = (status, message) => {
 };
 
 /**
- * Logs a Supabase error and turns it into a 502 error for the client.
+ * Logs a Supabase error and turns it into an HTTP error for the client:
+ * rejected data (check constraint 23514, wrong type 22P02) -> 400,
+ * everything else -> 502.
  *
  * @param {object} dbError - error object returned by supabase-js
  * @param {string} message - message sent to the client
@@ -20,6 +22,9 @@ const httpError = (status, message) => {
  */
 const dbError = (dbError, message) => {
   console.error(`${message}:`, dbError.message);
+  if (['23514', '22P02'].includes(dbError.code)) {
+    return httpError(400, `${message}: invalid data`);
+  }
   return httpError(502, message);
 };
 

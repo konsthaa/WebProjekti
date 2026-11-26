@@ -12,6 +12,15 @@ import {validationErrors} from '../../middlewares/error-handlers.js';
 
 const orderRouter = express.Router();
 
+// must match the orders_status_check constraint in the database
+const ORDER_STATUSES = [
+  'pending',
+  'preparing',
+  'ready',
+  'completed',
+  'cancelled',
+];
+
 const validateNewOrder = [
   body('items').isArray({min: 1, max: 50}),
   body('items.*.product_id').isInt({min: 1}).toInt(),
@@ -40,7 +49,7 @@ orderRouter.patch(
   authenticateToken,
   authorizeAdmin,
   param('id').isInt({min: 1}).toInt(),
-  body('order_status').isString().trim().notEmpty(),
+  body('order_status').isIn(ORDER_STATUSES),
   validationErrors,
   patchOrderStatus,
 );
