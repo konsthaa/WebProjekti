@@ -1,0 +1,78 @@
+@baseUrl = http://localhost:3000/api/v1
+@adminToken = admin-access-token-here
+@userToken = non-admin-access-token-here
+@menuDate = 2026-11-26
+
+### Public: get all lunch menu items
+GET {{baseUrl}}/lunch-menu
+
+### Public: filter lunch menu items by date
+GET {{baseUrl}}/lunch-menu?date={{menuDate}}
+
+### Public: filter lunch menu items by category
+GET {{baseUrl}}/lunch-menu?category=Main
+
+### Denied: create without an access token (expect 401)
+POST {{baseUrl}}/lunch-menu
+Content-Type: application/json
+
+{
+  "name": "API test lunch",
+  "price": 10.5,
+  "category": "Main",
+  "date": "{{menuDate}}",
+  "Veg": true,
+  "Glut": false,
+  "Lacto": false
+}
+
+### Denied: create as a non-admin user (expect 403)
+POST {{baseUrl}}/lunch-menu
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "name": "API test lunch",
+  "price": 10.5,
+  "category": "Main",
+  "date": "{{menuDate}}",
+  "Veg": true,
+  "Glut": false,
+  "Lacto": false
+}
+
+### Admin: create a lunch menu item
+# @name createLunchMenuItem
+POST {{baseUrl}}/lunch-menu
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "name": "API test lunch",
+  "price": 10.5,
+  "category": "Main",
+  "date": "{{menuDate}}",
+  "Veg": true,
+  "Glut": false,
+  "Lacto": false
+}
+
+### Denied: delete as a non-admin user (expect 403)
+DELETE {{baseUrl}}/lunch-menu/{{createLunchMenuItem.response.body.$.data.product_id}}
+Authorization: Bearer {{userToken}}
+
+### Admin: update the created lunch menu item
+PUT {{baseUrl}}/lunch-menu/{{createLunchMenuItem.response.body.$.data.product_id}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "price": 11.25
+}
+
+### Denied: delete without an access token (expect 401)
+DELETE {{baseUrl}}/lunch-menu/{{createLunchMenuItem.response.body.$.data.product_id}}
+
+### Admin: delete the created lunch menu item
+DELETE {{baseUrl}}/lunch-menu/{{createLunchMenuItem.response.body.$.data.product_id}}
+Authorization: Bearer {{adminToken}}

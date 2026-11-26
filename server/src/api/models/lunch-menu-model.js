@@ -22,7 +22,6 @@ const listLunchMenuItems = async ({date, category} = {}) => {
 
 const addLunchMenuItem = async (client, item) => {
   const payload = {
-    product_id: item.product_id,
     name: item.name.trim(),
     price: Number(item.price),
     category: item.category.trim(),
