@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {supabase} from '../lib/supabaseClient';
+import {fetchData} from '../utils/fetchData';
 
 function SignInMenu() {
   const [session, setSession] = useState(null);
@@ -169,17 +170,11 @@ function SignInMenu() {
     }
 
     try {
-      const response = await fetch('/api/orders', {
+      const data = await fetchData('/api/v1/orders', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Could not load orders');
-      }
 
       setOrders(data);
       setShowOrders(true);
@@ -211,6 +206,18 @@ function SignInMenu() {
     marginBottom: '0.75rem',
   };
 
+  const inputClassName =
+    'w-full rounded border border-gray-400 bg-white px-3 py-2 text-gray-900';
+
+  const primaryButtonClassName =
+    'w-full cursor-pointer rounded-md bg-gray-800 px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2';
+
+  const linkButtonClassName =
+    'mt-2 cursor-pointer text-sm underline underline-offset-4 transition-colors hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2';
+
+  const registerButtonClassName =
+    'mt-3 w-full cursor-pointer rounded-md border border-gray-400 px-4 py-2 font-medium transition-colors hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2';
+
   if (loading) {
     return <span>Loading account…</span>;
   }
@@ -221,6 +228,7 @@ function SignInMenu() {
         <label style={fieldStyle}>
           New password
           <input
+            className={inputClassName}
             type="password"
             minLength={6}
             value={newPassword}
@@ -228,7 +236,9 @@ function SignInMenu() {
             required
           />
         </label>
-        <button type="submit">Update password</button>
+        <button type="submit" className={primaryButtonClassName}>
+          Update password
+        </button>
         {message && <p role="status">{message}</p>}
         {error && <p role="alert">{error}</p>}
       </form>
@@ -295,13 +305,14 @@ function SignInMenu() {
   return (
     <details style={{position: 'relative'}}>
       <summary style={{cursor: 'pointer'}}>Sign in / Register</summary>
-      <div style={menuStyle}>
+      <div style={menuStyle} className="text-gray-900">
         <form onSubmit={handleSubmit}>
           {mode === 'register' && (
             <>
               <label style={fieldStyle}>
                 Username
                 <input
+                  className={inputClassName}
                   autoComplete="username"
                   value={username}
                   onChange={(event) => setUsername(event.target.value)}
@@ -311,6 +322,7 @@ function SignInMenu() {
               <label style={fieldStyle}>
                 Name
                 <input
+                  className={inputClassName}
                   autoComplete="name"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
@@ -323,6 +335,7 @@ function SignInMenu() {
           <label style={fieldStyle}>
             Email
             <input
+              className={inputClassName}
               type="email"
               autoComplete="email"
               value={email}
@@ -334,6 +347,7 @@ function SignInMenu() {
           <label style={fieldStyle}>
             Password
             <input
+              className={inputClassName}
               type="password"
               autoComplete={
                 mode === 'register' ? 'new-password' : 'current-password'
@@ -345,20 +359,24 @@ function SignInMenu() {
             />
           </label>
 
-          <button type="submit">
+          <button type="submit" className={primaryButtonClassName}>
             {mode === 'register' ? 'Register' : 'Sign in'}
           </button>
 
           {mode === 'sign-in' && (
-  <button type="button" onClick={handlePasswordRecovery}>
-    Forgot password?
-  </button>
-)}
+            <button
+              type="button"
+              className={linkButtonClassName}
+              onClick={handlePasswordRecovery}
+            >
+              Forgot password?
+            </button>
+          )}
         </form>
 
         <button
           type="button"
-          style={{marginTop: '0.75rem'}}
+          className={registerButtonClassName}
           onClick={() => {
             setMode(mode === 'register' ? 'sign-in' : 'register');
             setError('');
