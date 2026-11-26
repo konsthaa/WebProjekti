@@ -23,7 +23,9 @@ function LunchMenu() {
       } catch (error) {
         if (!cancelled) {
           setErrorMsg(
-            error instanceof Error ? error.message : 'Failed to load lunch menu',
+            error instanceof Error
+              ? error.message
+              : 'Failed to load lunch menu',
           );
         }
       } finally {
@@ -87,6 +89,7 @@ function LunchMenu() {
                   key={item.product_id}
                   style={{
                     display: 'flex',
+                    alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: '1rem',
                     border: '1px solid #900',
@@ -95,19 +98,50 @@ function LunchMenu() {
                     marginBottom: '1rem',
                   }}
                 >
-                  <div>
-                    <strong>{item.name}</strong>
+                  <div style={{flex: 1, minWidth: 0}}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      <strong>{item.name}</strong>
+                      <strong>{Number(item.price).toFixed(2)} €</strong>
+                    </div>
+
                     <div style={{fontSize: '0.9rem', color: '#555'}}>
                       {item.category || 'Other'}
                     </div>
-                    <div style={{fontSize: '0.9rem', color: '#555', marginTop: '0.35rem'}}>
-                      <strong>Dietary:</strong>{' '}
-                      Vegetarian: {item.Veg ? 'Yes' : 'No'} |{' '}
-                      Gluten-free: {item.Glut ? 'Yes' : 'No'} |{' '}
-                      Lactose-free: {item.Lacto ? 'Yes' : 'No'}
+
+                    <div
+                      style={{
+                        fontSize: '0.9rem',
+                        color: '#555',
+                        marginTop: '0.35rem',
+                      }}
+                    >
+                      <strong>Dietary:</strong> Vegetarian:{' '}
+                      {item.Veg ? 'Yes' : 'No'} | Gluten-free:{' '}
+                      {item.Glut ? 'Yes' : 'No'} | Lactose-free:{' '}
+                      {item.Lacto ? 'Yes' : 'No'}
                     </div>
                   </div>
-                  <strong>{Number(item.price).toFixed(2)} €</strong>
+
+                  {(item.image_url || item['image url']) && (
+                    <img
+                      src={item.image_url || item['image url']}
+                      alt={item.name}
+                      style={{
+                        width: '140px',
+                        height: '110px',
+                        objectFit: 'cover',
+                        borderRadius: '6px',
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
                 </li>
               ))}
             </ul>
