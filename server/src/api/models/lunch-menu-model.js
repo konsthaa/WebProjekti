@@ -2,7 +2,8 @@ import {supabase} from '../../utils/supabase.js';
 import {dbError} from '../../utils/http-error.js';
 
 const TABLE = 'LUNCH MENU';
-const COLUMNS = 'product_id, name, price, category, date, Veg, Glut, Lacto';
+const COLUMNS =
+  'product_id, name, price, category, date, Veg, Glut, Lacto, image_url';
 
 const listLunchMenuItems = async ({date, category} = {}) => {
   let query = supabase
@@ -29,6 +30,7 @@ const addLunchMenuItem = async (client, item) => {
     Veg: item.Veg ?? false,
     Glut: item.Glut ?? false,
     Lacto: item.Lacto ?? false,
+    image_url: item.image_url?.trim() || null,
   };
 
   const {data, error} = await client
@@ -39,7 +41,9 @@ const addLunchMenuItem = async (client, item) => {
 
   // 23505 = PostgreSQL unique_violation
   if (error?.code === '23505') {
-    const duplicate = new Error('A lunch menu item with this product_id exists');
+    const duplicate = new Error(
+      'A lunch menu item with this product_id exists',
+    );
     duplicate.status = 409;
     throw duplicate;
   }
@@ -55,6 +59,9 @@ const modifyLunchMenuItem = async (client, productId, updates) => {
   if (updates.price !== undefined) payload.price = Number(updates.price);
   for (const field of ['date', 'Veg', 'Glut', 'Lacto']) {
     if (updates[field] !== undefined) payload[field] = updates[field];
+  }
+  if (updates.image_url !== undefined) {
+    payload.image_url = updates.image_url ? updates.image_url.trim() : null;
   }
 
   const {data, error} = await client
