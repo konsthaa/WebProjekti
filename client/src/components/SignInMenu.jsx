@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {supabase} from '../lib/supabaseClient';
+import {fetchData} from '../utils/fetchData';
 
 function SignInMenu() {
   const [session, setSession] = useState(null);
@@ -169,17 +170,11 @@ function SignInMenu() {
     }
 
     try {
-      const response = await fetch('/api/orders', {
+      const data = await fetchData('/api/v1/orders', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Could not load orders');
-      }
 
       setOrders(data);
       setShowOrders(true);

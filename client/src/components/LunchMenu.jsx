@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
+import {fetchData} from '../utils/fetchData';
 
 function LunchMenu({addToCart}) {
   const [items, setItems] = useState([]);
@@ -11,12 +12,7 @@ function LunchMenu({addToCart}) {
 
     async function fetchLunchMenu() {
       try {
-        const response = await fetch('/api/lunch-menu');
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || `Request failed (${response.status})`);
-        }
+        const result = await fetchData('/api/v1/lunch-menu');
 
         if (!cancelled) setItems(result.data ?? []);
       } catch (error) {

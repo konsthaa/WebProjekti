@@ -1,5 +1,6 @@
 import {useEffect, useState} from 'react';
 import {supabase} from '../lib/supabaseClient';
+import {fetchData} from '../utils/fetchData';
 
 function MenuPage({cart, setCart, addToCart}) {
   const [products, setProducts] = useState([]);
@@ -31,7 +32,7 @@ function MenuPage({cart, setCart, addToCart}) {
       if (sessionError) throw sessionError;
       if (!session) throw new Error('Sign in before placing an order.');
 
-      const response = await fetch('/api/orders', {
+      const result = await fetchData('/api/v1/orders', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -44,12 +45,6 @@ function MenuPage({cart, setCart, addToCart}) {
           })),
         }),
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Could not place order.');
-      }
 
       setCart([]);
       setOrderMessage(`Order #${result.order_id} placed.`);
@@ -67,14 +62,7 @@ function MenuPage({cart, setCart, addToCart}) {
 
     async function fetchProducts() {
       try {
-        const response = await fetch('/api/products');
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            result.error || `Request failed (${response.status})`,
-          );
-        }
+        const result = await fetchData('/api/v1/products');
 
         if (!cancelled) setProducts(result);
       } catch (error) {

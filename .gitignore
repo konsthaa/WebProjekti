@@ -1,8 +1,8 @@
+node_modules
 .vscode
 .idea
-node_modules
 .DS_Store
 .env
 
-
 client/dist
+dist
