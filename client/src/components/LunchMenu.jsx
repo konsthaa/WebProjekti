@@ -1,7 +1,8 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
+import {fetchData} from '../utils/fetchData';
 
-function LunchMenu() {
+function LunchMenu({addToCart}) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -11,12 +12,7 @@ function LunchMenu() {
 
     async function fetchLunchMenu() {
       try {
-        const response = await fetch('/api/lunch-menu');
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || `Request failed (${response.status})`);
-        }
+        const result = await fetchData('/api/v1/lunch-menu');
 
         if (!cancelled) setItems(result.data ?? []);
       } catch (error) {
@@ -103,6 +99,9 @@ function LunchMenu() {
                     </div>
                   </div>
                   <strong>{Number(item.price).toFixed(2)} €</strong>
+                  <button type="button" onClick={() => addToCart(item)}>
+                    Lisää ostoskoriin
+                  </button>
                 </li>
               ))}
             </ul>
