@@ -42,11 +42,11 @@ function App() {
         />
         <Route
           path="/lunch-menu"
-          element={<LunchMenu addToCart={addToCart} />}
+          element={<LunchMenu />}
         />
         <Route
           path="/lunch-menu/"
-          element={<LunchMenu addToCart={addToCart} />}
+          element={<LunchMenu />}
         />
       </Routes>
     </div>
