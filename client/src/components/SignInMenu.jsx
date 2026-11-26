@@ -161,10 +161,10 @@ function SignInMenu() {
     setError('');
 
     const {
-      data: {session},
+      data: {session: currentSession},
     } = await supabase.auth.getSession();
 
-    if (!session) {
+    if (!currentSession) {
       setError('You must sign in first.');
       return;
     }
@@ -172,7 +172,7 @@ function SignInMenu() {
     try {
       const data = await fetchData('/api/v1/orders', {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${currentSession.access_token}`,
         },
       });
 
@@ -187,45 +187,34 @@ function SignInMenu() {
     }
   }
 
-  const menuStyle = {
-    position: 'absolute',
-    top: 'calc(100% + 0.5rem)',
-    right: 0,
-    zIndex: 1,
-    width: 'min(300px, calc(100vw - 4rem))',
-    padding: '1rem',
-    border: '1px solid #FF8C00',
-    borderRadius: '8px',
-    background: 'white',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
-  };
+  const menuClassName =
+    'absolute top-full right-0 z-20 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-stone-200 bg-white p-4 text-left text-stone-900 shadow-lg';
 
-  const fieldStyle = {
-    display: 'grid',
-    gap: '0.3rem',
-    marginBottom: '0.75rem',
-  };
+  const fieldClassName = 'grid gap-1 text-sm font-medium text-stone-700';
 
   const inputClassName =
-    'w-full rounded border border-gray-400 bg-white px-3 py-2 text-gray-900';
+    'w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm font-normal text-stone-900 focus:border-stone-500 focus:outline-none';
 
   const primaryButtonClassName =
-    'w-full cursor-pointer rounded-md bg-gray-800 px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2';
+    'w-full cursor-pointer rounded-lg bg-stone-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2';
 
   const linkButtonClassName =
-    'mt-2 cursor-pointer text-sm underline underline-offset-4 transition-colors hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2';
+    'mt-2 cursor-pointer text-sm text-stone-600 underline underline-offset-4 transition-colors hover:text-stone-900';
 
   const registerButtonClassName =
-    'mt-3 w-full cursor-pointer rounded-md border border-gray-400 px-4 py-2 font-medium transition-colors hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2';
+    'mt-3 w-full cursor-pointer rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-800 transition-colors hover:bg-stone-50';
 
   if (loading) {
-    return <span>Loading account…</span>;
+    return <span className="text-sm text-stone-500">Loading account…</span>;
   }
 
   if (isPasswordRecovery) {
     return (
-      <form onSubmit={handlePasswordUpdate}>
-        <label style={fieldStyle}>
+      <form
+        onSubmit={handlePasswordUpdate}
+        className="w-72 rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
+      >
+        <label className={fieldClassName}>
           New password
           <input
             className={inputClassName}
@@ -236,80 +225,114 @@ function SignInMenu() {
             required
           />
         </label>
-        <button type="submit" className={primaryButtonClassName}>
+        <button type="submit" className={`${primaryButtonClassName} mt-2`}>
           Update password
         </button>
-        {message && <p role="status">{message}</p>}
-        {error && <p role="alert">{error}</p>}
+        {message && (
+          <p role="status" className="mt-2 text-sm text-emerald-700">
+            {message}
+          </p>
+        )}
+        {error && (
+          <p role="alert" className="mt-2 text-sm text-red-600">
+            {error}
+          </p>
+        )}
       </form>
     );
   }
 
   if (session?.user) {
-    return (
-      <div
-        style={{
-          position: 'relative',
-          textAlign: 'right',
-          border: '1px solid rgb(153, 0, 0)',
-          borderRadius: '10px',
-          padding: '1.25rem',
-          marginBottom: '1.25rem',
-          borderColor: '#3D3B2A',
-        }}
-      >
-        <strong>{session.user.email}</strong>
-        <div
-          style={{
-            fontSize: '0.9rem',
-            color: '#3D3B2A' /*#555' <-original*/,
-            margin: '0.25rem 0',
-          }}
-        >
-          {role === 'admin'
-            ? 'Admin'
-            : role === 'customer'
-              ? 'Registered customer'
-              : 'Loading role…'}
-        </div>
-        <button type="button" onClick={handleSignOut}>
-          Sign out
-        </button>
-        <button type="button" onClick={loadOrders}>
-          {showOrders ? 'Hide my orders' : 'Load my orders'}
-        </button>
+    const roleLabel =
+      role === 'admin'
+        ? 'Admin'
+        : role === 'customer'
+          ? 'Registered customer'
+          : 'Loading role…';
 
-        {showOrders && orders !== null && (
-          <section style={{textAlign: 'left'}}>
-            <h3>My orders</h3>
-            {orders.length === 0 ? (
-              <p>No orders yet.</p>
-            ) : (
-              <ul>
-                {orders.map((order) => (
-                  <li key={order.order_id}>
-                    <strong>Order #{order.order_id}</strong> — {order.date}
-                    <p>{order.order_detail || 'No details'}</p>
-                    <p>Status: {order.order_status ?? 'Not set'}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        )}
-        {error && <p role="alert">{error}</p>}
-      </div>
+    return (
+      <details className="relative">
+        <summary className="cursor-pointer list-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-sm font-medium text-stone-800 transition-colors hover:bg-stone-100">
+          {session.user.email} ▾
+        </summary>
+
+        <div className={menuClassName}>
+          <div className="flex items-start justify-between gap-2">
+            <p className="truncate text-sm font-semibold text-stone-900">
+              {session.user.email}
+            </p>
+            <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-700">
+              {roleLabel}
+            </span>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2 border-t border-stone-100 pt-3">
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="cursor-pointer rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-50"
+            >
+              Sign out
+            </button>
+            <button
+              type="button"
+              onClick={loadOrders}
+              className="cursor-pointer rounded-lg bg-stone-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-stone-800"
+            >
+              {showOrders ? 'Hide my orders' : 'Load my orders'}
+            </button>
+          </div>
+
+          {showOrders && orders !== null && (
+            <section className="mt-4 border-t border-stone-100 pt-3">
+              <h3 className="mb-2 text-sm font-semibold text-stone-900">
+                My orders
+              </h3>
+              {orders.length === 0 ? (
+                <p className="text-sm text-stone-500">No orders yet.</p>
+              ) : (
+                <ul className="max-h-60 space-y-2 overflow-y-auto pr-1 text-sm">
+                  {orders.map((order) => (
+                    <li
+                      key={order.order_id}
+                      className="rounded-lg border border-stone-200 bg-stone-50 p-2.5"
+                    >
+                      <div className="font-medium text-stone-900">
+                        Order #{order.order_id} — {order.date}
+                      </div>
+                      <p className="mt-1 text-stone-600">
+                        {order.order_detail || 'No details'}
+                      </p>
+                      <p className="mt-1 text-xs text-stone-500">
+                        Status: {order.order_status ?? 'Not set'}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {error && (
+            <p role="alert" className="mt-3 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+        </div>
+      </details>
     );
   }
 
   return (
-    <details style={{position: 'relative'}}>
-      <summary style={{cursor: 'pointer'}}>Sign in / Register</summary>
-      <div style={menuStyle} className="text-gray-900">
-        <form onSubmit={handleSubmit}>
+    <details className="relative">
+      <summary className="cursor-pointer list-none rounded-lg border border-stone-200 bg-stone-50 px-3 py-1.5 text-sm font-medium text-stone-800 transition-colors hover:bg-stone-100">
+        Sign in / Register ▾
+      </summary>
+      <div className={menuClassName}>
+        <form onSubmit={handleSubmit} className="space-y-3">
           {mode === 'register' && (
             <>
-              <label style={fieldStyle}>
+              <label className={fieldClassName}>
                 Username
                 <input
                   className={inputClassName}
@@ -319,7 +342,7 @@ function SignInMenu() {
                   required
                 />
               </label>
-              <label style={fieldStyle}>
+              <label className={fieldClassName}>
                 Name
                 <input
                   className={inputClassName}
@@ -332,7 +355,7 @@ function SignInMenu() {
             </>
           )}
 
-          <label style={fieldStyle}>
+          <label className={fieldClassName}>
             Email
             <input
               className={inputClassName}
@@ -344,7 +367,7 @@ function SignInMenu() {
             />
           </label>
 
-          <label style={fieldStyle}>
+          <label className={fieldClassName}>
             Password
             <input
               className={inputClassName}
@@ -386,8 +409,12 @@ function SignInMenu() {
           {mode === 'register' ? 'I already have an account' : 'Register'}
         </button>
 
-        {message && <p>{message}</p>}
-        {error && <p role="alert">{error}</p>}
+        {message && <p className="mt-3 text-sm text-emerald-700">{message}</p>}
+        {error && (
+          <p role="alert" className="mt-3 text-sm text-red-600">
+            {error}
+          </p>
+        )}
       </div>
     </details>
   );
