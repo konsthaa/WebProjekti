@@ -1,7 +1,61 @@
 import express from 'express';
 import authenticate from '../middleware/authenticate.js';
+import authorizeAdmin from '../middleware/authorize.js';
 
 const router = express.Router();
+
+router.get('/admin', authenticate, authorizeAdmin, async (req, res) => {
+  const {data, error} = await req.supabase
+    .from('ORDERS')
+    .select('order_id, user_id, date, order_detail, order_status')
+    .order('date', {ascending: false});
+
+  if (error) {
+    console.error('Could not load all orders:', error.message);
+    return res.status(502).json({error: 'Could not load all orders'});
+  }
+
+  return res.json(data);
+});
+
+router.patch(
+  '/:orderId/status',
+  authenticate,
+  authorizeAdmin,
+  async (req, res) => {
+    const orderId = Number(req.params.orderId);
+    const status = req.body?.order_status;
+
+    if (
+      !Number.isSafeInteger(orderId) ||
+      orderId < 1 ||
+      typeof status !== 'string' ||
+      status.trim() === ''
+    ) {
+      return res.status(400).json({
+        error: 'Provide a valid order ID and non-empty order_status',
+      });
+    }
+
+    const {data, error} = await req.supabase
+      .from('ORDERS')
+      .update({order_status: status.trim()})
+      .eq('order_id', orderId)
+      .select('order_id, user_id, date, order_detail, order_status')
+      .maybeSingle();
+
+    if (error) {
+      console.error('Could not update order status:', error.message);
+      return res.status(502).json({error: 'Could not update order status'});
+    }
+
+    if (!data) {
+      return res.status(404).json({error: 'Order not found'});
+    }
+
+    return res.json(data);
+  },
+);
 
 router.get('/', authenticate, async (req, res) => {
   const {data: profile, error: profileError} = await req.supabase
