@@ -55,7 +55,7 @@ function App() {
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="mx-auto max-w-[650px] p-8 font-sans">
+    <div className="mx-auto max-width: 650px p-8 font-sans">
       <Header cartCount={cartCount} onOpenCart={() => navigate('/cart')} />
 
       <Routes>
